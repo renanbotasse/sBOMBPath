@@ -1,0 +1,96 @@
+{
+  "sources": [
+    {
+      "id": "request_get",
+      "source_type": "request.GET",
+      "description": "Django query string",
+      "attr_chain": ["request", "GET"]
+    },
+    {
+      "id": "request_post",
+      "source_type": "request.POST",
+      "description": "Django form body",
+      "attr_chain": ["request", "POST"]
+    },
+    {
+      "id": "request_data",
+      "source_type": "request.data",
+      "description": "DRF request data",
+      "attr_chain": ["request", "data"]
+    },
+    {
+      "id": "request_files",
+      "source_type": "request.FILES",
+      "description": "Uploaded files",
+      "attr_chain": ["request", "FILES"]
+    },
+    {
+      "id": "request_headers",
+      "source_type": "request.headers",
+      "description": "HTTP headers",
+      "attr_chain": ["request", "headers"]
+    },
+    {
+      "id": "request_meta",
+      "source_type": "request.META",
+      "description": "WSGI META / custom headers",
+      "attr_chain": ["request", "META"]
+    },
+    {
+      "id": "request_body",
+      "source_type": "request.body",
+      "description": "Raw request body",
+      "attr_chain": ["request", "body"]
+    },
+    {
+      "id": "self_request_get",
+      "source_type": "request.GET",
+      "description": "View self.request.GET",
+      "attr_chain": ["self", "request", "GET"]
+    },
+    {
+      "id": "self_request_data",
+      "source_type": "request.data",
+      "description": "View self.request.data",
+      "attr_chain": ["self", "request", "data"]
+    },
+    {
+      "id": "query_params",
+      "source_type": "request.query_params",
+      "description": "DRF query_params",
+      "attr_chain": ["request", "query_params"]
+    },
+    {
+      "id": "self_query_params",
+      "source_type": "request.query_params",
+      "description": "self.request.query_params",
+      "attr_chain": ["self", "request", "query_params"]
+    },
+    {
+      "id": "self_kwargs",
+      "source_type": "request.kwargs",
+      "description": "URL kwargs on view",
+      "attr_chain": ["self", "kwargs"]
+    },
+    {
+      "id": "request_resolver_kwargs",
+      "source_type": "request.kwargs",
+      "description": "resolver_match.kwargs",
+      "attr_chain": ["request", "resolver_match", "kwargs"]
+    }
+  ],
+  "call_sources": [
+    {
+      "id": "json_loads_body",
+      "source_type": "json.loads",
+      "qualnames": ["json.loads", "loads"],
+      "taints_if_arg_from": ["request.body", "request.data"]
+    },
+    {
+      "id": "yaml_load",
+      "source_type": "yaml.load",
+      "qualnames": ["yaml.safe_load", "yaml.load", "safe_load"],
+      "taints_if_arg_from": ["request.data", "request.body"]
+    }
+  ]
+}

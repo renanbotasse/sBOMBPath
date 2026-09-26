@@ -1,0 +1,6 @@
+[
+  {"id": "CVE-2025-64459", "package": "django", "symbol": "filter", "severity": "CRITICAL"},
+  {"id": "CVE-2026-32597", "package": "pyjwt", "symbol": "jwt.decode", "severity": "HIGH"},
+  {"id": "CVE-2026-69247", "package": "cryptography", "symbol": "decrypt", "severity": "MEDIUM"},
+  {"id": "CVE-2026-54058", "package": "pillow", "symbol": "Image.open", "severity": "MEDIUM"}
+]

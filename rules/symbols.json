@@ -1,0 +1,104 @@
+{
+  "sinks": [
+    {
+      "cve": "CVE-2025-64459",
+      "package": "django",
+      "title": "Django SQL Injection via queryset unpacking",
+      "severity": "CRITICAL",
+      "sink_functions": ["filter", "exclude", "Q"],
+      "dangerous_patterns": ["starstar_kwargs"],
+      "safe_patterns": ["named_kwargs"],
+      "remediation": "Use explicit named fields: Model.objects.filter(name=value) instead of filter(**user_dict)."
+    },
+    {
+      "cve": "CVE-2025-64459",
+      "package": "django",
+      "title": "Django raw SQL",
+      "severity": "CRITICAL",
+      "sink_functions": ["raw", "extra"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Avoid raw()/extra() with user input; use ORM filters or parameterized SQL."
+    },
+    {
+      "cve": "CVE-2026-32597",
+      "package": "pyjwt",
+      "title": "PyJWT header validation weakness",
+      "severity": "HIGH",
+      "sink_functions": ["decode", "jwt.decode"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Validate token type/claims; pin algorithms; reject unexpected header extensions."
+    },
+    {
+      "cve": "GENERIC-PICKLE",
+      "package": "pickle",
+      "title": "Insecure deserialization",
+      "severity": "CRITICAL",
+      "sink_functions": ["loads", "pickle.loads", "load"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Never deserialize untrusted data with pickle."
+    },
+    {
+      "cve": "GENERIC-RCE-SUBPROCESS",
+      "package": "subprocess",
+      "title": "Command injection via shell=True",
+      "severity": "CRITICAL",
+      "sink_functions": ["run", "call", "Popen", "subprocess.run", "os.system"],
+      "dangerous_patterns": ["shell_true", "tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Pass argv lists with shell=False; never interpolate user input into shell commands."
+    },
+    {
+      "cve": "GENERIC-RCE-EVAL",
+      "package": "builtins",
+      "title": "Code injection via eval/exec",
+      "severity": "CRITICAL",
+      "sink_functions": ["eval", "exec"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Do not eval user input; use safe parsers."
+    },
+    {
+      "cve": "GENERIC-SSTI",
+      "package": "jinja2",
+      "title": "Server-side template injection",
+      "severity": "HIGH",
+      "sink_functions": ["Template", "jinja2.Template", "render"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Never render user-controlled template strings; use fixed templates with escaped variables."
+    },
+    {
+      "cve": "GENERIC-PATH-TRAVERSAL",
+      "package": "builtins",
+      "title": "Path traversal via open/join",
+      "severity": "HIGH",
+      "sink_functions": ["open", "os.path.join", "pathlib.Path"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Resolve paths under a trusted root and reject `..` segments."
+    },
+    {
+      "cve": "CVE-2026-69247",
+      "package": "cryptography",
+      "title": "Cryptography misuse / padding oracle class issues",
+      "severity": "MEDIUM",
+      "sink_functions": ["decrypt", "cipher.decrypt"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Prefer authenticated encryption (AES-GCM); validate ciphertext before decrypt."
+    },
+    {
+      "cve": "CVE-2026-54058",
+      "package": "pillow",
+      "title": "Pillow OOB read (often indirect via ImageField)",
+      "severity": "MEDIUM",
+      "sink_functions": ["Image.open", "open"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Validate image type/size; keep Pillow patched; prefer framework abstractions with limits."
+    }
+  ]
+}
