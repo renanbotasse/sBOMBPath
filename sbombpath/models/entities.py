@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
 
-from .enums import FindingStatus, RiskLevel
+from .enums import ExposureKind, FindingStatus, RiskLevel
 
 
 @dataclass
@@ -103,6 +103,7 @@ class ExploitableFinding:
     severity: str
     status: FindingStatus
     risk_level: RiskLevel
+    exposure: ExposureKind
     http_endpoint: Optional[str]
     reachable: bool
     taint_source: Dict[str, Any]
@@ -114,12 +115,15 @@ class ExploitableFinding:
     remediation: str
     priority: str
     path_description: str
+    title: str = ""
+    contaminated_symbols: List[str] = field(default_factory=list)
     analysis_notes: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         data = asdict(self)
         data["status"] = self.status.value
         data["risk_level"] = self.risk_level.value
+        data["exposure"] = self.exposure.value
         return data
 
 
@@ -131,6 +135,9 @@ class ReportMeta:
     mitigated_paths: int
     unknown_paths: int
     not_exploitable: int = 0
+    user_facing: int = 0
+    internal_taint: int = 0
+    package_surface: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)

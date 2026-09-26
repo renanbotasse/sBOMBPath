@@ -98,6 +98,54 @@ class ConfigTests(unittest.TestCase):
         catalog = load_symbols_catalog()
         self.assertTrue(catalog.get("sinks"))
 
+    def test_severity_from_cvss_when_unknown(self):
+        from sbombpath.severity import normalize_severity
+
+        # Mirrors old sBOMBox reports: Deferred + CVSS, severity still UNKNOWN
+        self.assertEqual(
+            normalize_severity({"severity": "UNKNOWN", "cvss": 5.3}),
+            "MEDIUM",
+        )
+        self.assertEqual(
+            normalize_severity({"severity": "UNKNOWN", "cvss": 7.5}),
+            "HIGH",
+        )
+        self.assertEqual(
+            normalize_severity({"severity": "MODERATE"}),
+            "MEDIUM",
+        )
+        self.assertEqual(
+            normalize_severity({"severity": "CRITICAL", "cvss": 1.0}),
+            "CRITICAL",
+        )
+        self.assertEqual(
+            normalize_severity({"severity": "UNKNOWN"}),
+            "UNKNOWN",
+        )
+
+    def test_load_cve_report_derives_severity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "vulns.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "findings": [
+                            {
+                                "id": "CVE-2024-47081",
+                                "package": "requests",
+                                "severity": "UNKNOWN",
+                                "cvss": 5.3,
+                                "nvd_status": "Deferred",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            rows = load_cve_report(path)
+            self.assertEqual(rows[0]["severity"], "MEDIUM")
+            self.assertEqual(rows[0]["cvss"], 5.3)
+
 
 if __name__ == "__main__":
     unittest.main()

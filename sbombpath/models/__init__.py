@@ -10,11 +10,12 @@ from .entities import (
     SinkMatch,
     TaintSource,
 )
-from .enums import FindingStatus, RiskLevel
+from .enums import ExposureKind, FindingStatus, RiskLevel
 
 __all__ = [
     "Endpoint",
     "ExploitableFinding",
+    "ExposureKind",
     "FindingStatus",
     "FlowStep",
     "Location",

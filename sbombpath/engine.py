@@ -12,6 +12,7 @@ from .analysis import (
     SourceDetector,
     VulnerabilityMapper,
 )
+from .analysis.triage import build_cve_comparison
 from .collect import collect_codebase
 from .config import load_cve_report, load_sources_catalog, load_symbols_catalog
 from .report import ReportGenerator
@@ -48,6 +49,8 @@ class PathRecognitionEngine:
             taint_sources, flow, codebase, reachability
         )
 
+        comparison = build_cve_comparison(cve_report, findings, symbols_catalog)
+
         if cve_report:
             cves_analyzed = len(cve_report)
         else:
@@ -60,11 +63,15 @@ class PathRecognitionEngine:
             "paths-traced": [f.to_dict() for f in findings],
             "parse-errors": codebase.parse_errors,
             "endpoints": [e.to_dict() for e in reachability.endpoints],
+            "cve-comparison": comparison,
         }
 
-        meta = ReportGenerator(self.output_dir).write(findings, cves_analyzed, debug)
+        meta = ReportGenerator(self.output_dir).write(
+            findings, cves_analyzed, debug, comparison=comparison
+        )
         return {
             "meta": meta,
             "findings": findings,
+            "comparison": comparison,
             "parse_errors": codebase.parse_errors,
         }

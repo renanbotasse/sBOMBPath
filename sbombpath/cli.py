@@ -91,9 +91,12 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     print("sBOMBPath — complete")
     print(f"  CVEs analyzed:     {meta.cves_analyzed}")
+    print(f"  User-facing:       {meta.user_facing}")
+    print(f"  Internal taint:    {meta.internal_taint}")
+    print(f"  Package surface:   {meta.package_surface}")
     print(f"  EXPLOITABLE:       {meta.exploitable_paths}")
     print(f"  MITIGATED:         {meta.mitigated_paths}")
-    print(f"  UNKNOWN:           {meta.unknown_paths}")
+    print(f"  UNKNOWN / AT_RISK: {meta.unknown_paths}")
     print(f"  Reports written to: {args.output_dir.resolve()}")
     if result["parse_errors"]:
         print(f"  Parse warnings:    {len(result['parse_errors'])}")

@@ -5,15 +5,21 @@ from __future__ import annotations
 import csv
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from ..models import ExploitableFinding, ReportMeta
 
 
-def write_json(output_dir: Path, meta: ReportMeta, findings: List[ExploitableFinding]) -> None:
+def write_json(
+    output_dir: Path,
+    meta: ReportMeta,
+    findings: List[ExploitableFinding],
+    comparison: Optional[Dict[str, Any]] = None,
+) -> None:
     payload = {
         "report_meta": meta.to_dict(),
         "exploitable_paths": [f.to_dict() for f in findings],
+        "sbom_comparison": comparison or {},
     }
     path = output_dir / "exploitable-paths.json"
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -24,6 +30,7 @@ def write_csv(output_dir: Path, findings: List[ExploitableFinding]) -> None:
     fields = [
         "cve_id",
         "package",
+        "exposure",
         "status",
         "risk_level",
         "http_endpoint",
@@ -31,6 +38,7 @@ def write_csv(output_dir: Path, findings: List[ExploitableFinding]) -> None:
         "priority",
         "source_location",
         "sink_location",
+        "contaminated_symbols",
         "mitigation_detected",
     ]
     with path.open("w", encoding="utf-8", newline="") as handle:
@@ -41,6 +49,7 @@ def write_csv(output_dir: Path, findings: List[ExploitableFinding]) -> None:
                 {
                     "cve_id": f.cve_id,
                     "package": f.package,
+                    "exposure": f.exposure.value,
                     "status": f.status.value,
                     "risk_level": f.risk_level.value,
                     "http_endpoint": f.http_endpoint or "",
@@ -48,6 +57,7 @@ def write_csv(output_dir: Path, findings: List[ExploitableFinding]) -> None:
                     "priority": f.priority,
                     "source_location": f.taint_source.get("location", ""),
                     "sink_location": f.taint_sink.get("location", ""),
+                    "contaminated_symbols": ";".join(f.contaminated_symbols),
                     "mitigation_detected": f.mitigation_detected or "",
                 }
             )

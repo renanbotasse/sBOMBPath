@@ -115,6 +115,65 @@ class SinkCatalogTests(unittest.TestCase):
             )
         )
 
+    def test_rejects_false_friend_sinks(self):
+        """json.loads / str.join / obj.eval must not match pickle/path/eval sinks."""
+        import ast
+
+        from sbombpath.collect import CallFact
+
+        det = SinkDetector(load_symbols_catalog())
+        dummy = ast.parse("f(x)").body[0].value  # type: ignore[attr-defined]
+        cases = [
+            ("json.loads", "GENERIC-PICKLE"),
+            ("signing.loads", "GENERIC-PICKLE"),
+            ("', '.join", "GENERIC-PATH-TRAVERSAL"),
+            ("str.join", "GENERIC-PATH-TRAVERSAL"),
+            ("evaluator.eval", "GENERIC-RCE-EVAL"),
+            ("SimpleEval.eval", "GENERIC-RCE-EVAL"),
+            ("Image.open", "GENERIC-PATH-TRAVERSAL"),
+        ]
+        for func_name, cve in cases:
+            call = CallFact(
+                file="x.py",
+                lineno=1,
+                func_name=func_name,
+                full_expr=f"{func_name}(x)",
+                arg_names=["x"],
+                keyword_names={},
+                has_starargs=False,
+                has_kwargs=False,
+                shell_true=False,
+                function=None,
+                class_name=None,
+                node=dummy,
+            )
+            matched = [m for m in det.match_call(call) if m.cve == cve]
+            self.assertEqual(matched, [], f"{func_name} should not match {cve}")
+
+    def test_named_filter_not_flagged_without_starstar(self):
+        import ast
+
+        from sbombpath.collect import CallFact
+
+        det = SinkDetector(load_symbols_catalog())
+        dummy = ast.parse("f(x)").body[0].value  # type: ignore[attr-defined]
+        call = CallFact(
+            file="x.py",
+            lineno=1,
+            func_name="Product.objects.filter",
+            full_expr="Product.objects.filter(name=value)",
+            arg_names=[],
+            keyword_names={"name": "value"},
+            has_starargs=False,
+            has_kwargs=False,
+            shell_true=False,
+            function=None,
+            class_name=None,
+            node=dummy,
+        )
+        matched = [m for m in det.match_call(call) if m.cve == "CVE-2025-64459"]
+        self.assertEqual(matched, [])
+
 
 class ParallelCollectTests(unittest.TestCase):
     def test_collect_finds_fixture_files(self):

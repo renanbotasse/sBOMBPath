@@ -25,9 +25,10 @@
       "package": "pyjwt",
       "title": "PyJWT header validation weakness",
       "severity": "HIGH",
-      "sink_functions": ["decode", "jwt.decode"],
+      "sink_functions": ["jwt.decode", "PyJWT.decode"],
       "dangerous_patterns": ["tainted_first_arg"],
       "safe_patterns": [],
+      "allow_bare_name": false,
       "remediation": "Validate token type/claims; pin algorithms; reject unexpected header extensions."
     },
     {
@@ -35,9 +36,10 @@
       "package": "pickle",
       "title": "Insecure deserialization",
       "severity": "CRITICAL",
-      "sink_functions": ["loads", "pickle.loads", "load"],
+      "sink_functions": ["pickle.loads", "pickle.load"],
       "dangerous_patterns": ["tainted_first_arg"],
       "safe_patterns": [],
+      "allow_bare_name": false,
       "remediation": "Never deserialize untrusted data with pickle."
     },
     {
@@ -45,9 +47,10 @@
       "package": "subprocess",
       "title": "Command injection via shell=True",
       "severity": "CRITICAL",
-      "sink_functions": ["run", "call", "Popen", "subprocess.run", "os.system"],
+      "sink_functions": ["subprocess.run", "subprocess.call", "subprocess.Popen", "os.system"],
       "dangerous_patterns": ["shell_true", "tainted_first_arg"],
       "safe_patterns": [],
+      "allow_bare_name": false,
       "remediation": "Pass argv lists with shell=False; never interpolate user input into shell commands."
     },
     {
@@ -58,6 +61,8 @@
       "sink_functions": ["eval", "exec"],
       "dangerous_patterns": ["tainted_first_arg"],
       "safe_patterns": [],
+      "allow_bare_name": true,
+      "require_bare_or_builtins": true,
       "remediation": "Do not eval user input; use safe parsers."
     },
     {
@@ -65,7 +70,7 @@
       "package": "jinja2",
       "title": "Server-side template injection",
       "severity": "HIGH",
-      "sink_functions": ["Template", "jinja2.Template", "render"],
+      "sink_functions": ["jinja2.Template", "Template"],
       "dangerous_patterns": ["tainted_first_arg"],
       "safe_patterns": [],
       "remediation": "Never render user-controlled template strings; use fixed templates with escaped variables."
@@ -73,11 +78,12 @@
     {
       "cve": "GENERIC-PATH-TRAVERSAL",
       "package": "builtins",
-      "title": "Path traversal via open/join",
+      "title": "Path traversal via open / os.path.join",
       "severity": "HIGH",
       "sink_functions": ["open", "os.path.join", "pathlib.Path"],
       "dangerous_patterns": ["tainted_first_arg"],
       "safe_patterns": [],
+      "require_bare_or_builtins": true,
       "remediation": "Resolve paths under a trusted root and reject `..` segments."
     },
     {
@@ -85,7 +91,7 @@
       "package": "cryptography",
       "title": "Cryptography misuse / padding oracle class issues",
       "severity": "MEDIUM",
-      "sink_functions": ["decrypt", "cipher.decrypt"],
+      "sink_functions": ["decrypt"],
       "dangerous_patterns": ["tainted_first_arg"],
       "safe_patterns": [],
       "remediation": "Prefer authenticated encryption (AES-GCM); validate ciphertext before decrypt."
@@ -93,12 +99,67 @@
     {
       "cve": "CVE-2026-54058",
       "package": "pillow",
-      "title": "Pillow OOB read (often indirect via ImageField)",
+      "title": "Pillow OOB read",
       "severity": "MEDIUM",
-      "sink_functions": ["Image.open", "open"],
+      "sink_functions": ["Image.open", "PIL.Image.open"],
       "dangerous_patterns": ["tainted_first_arg"],
       "safe_patterns": [],
+      "allow_bare_name": false,
       "remediation": "Validate image type/size; keep Pillow patched; prefer framework abstractions with limits."
+    },
+    {
+      "cve": "CVE-2026-55073",
+      "package": "weasyprint",
+      "title": "WeasyPrint SSRF via HTML/PDF render",
+      "severity": "MEDIUM",
+      "sink_functions": ["HTML", "weasyprint.HTML", "write_pdf"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Do not render untrusted HTML/CSS with WeasyPrint; disable remote URL fetching; sanitize input."
+    },
+    {
+      "cve": "CVE-2026-49452",
+      "package": "weasyprint",
+      "title": "WeasyPrint CSS injection via presentational hints",
+      "severity": "MEDIUM",
+      "sink_functions": ["HTML", "weasyprint.HTML", "write_pdf"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "remediation": "Treat HTML/CSS passed to WeasyPrint as untrusted; sanitize presentational hints; upgrade WeasyPrint."
+    },
+    {
+      "cve": "CVE-2024-47081",
+      "package": "requests",
+      "title": "Requests .netrc credential leak via malicious URLs",
+      "severity": "MEDIUM",
+      "sink_functions": ["requests.get", "requests.post", "requests.put", "requests.request", "requests.head"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "allow_bare_name": false,
+      "package_surface_only": true,
+      "remediation": "Upgrade requests; avoid trusting user-controlled URLs; disable netrc (trust_env=False) when calling untrusted hosts."
+    },
+    {
+      "cve": "CVE-2026-59893",
+      "package": "sqlparse",
+      "title": "sqlparse ReDoS on dollar-quoted literals",
+      "severity": "HIGH",
+      "sink_functions": ["sqlparse.parse", "parse"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "allow_bare_name": false,
+      "remediation": "Upgrade sqlparse; do not parse unbounded user SQL with vulnerable versions."
+    },
+    {
+      "cve": "CVE-2026-54284",
+      "package": "sqlparse",
+      "title": "sqlparse CPU DoS in TokenList grouping",
+      "severity": "HIGH",
+      "sink_functions": ["sqlparse.parse", "parse"],
+      "dangerous_patterns": ["tainted_first_arg"],
+      "safe_patterns": [],
+      "allow_bare_name": false,
+      "remediation": "Upgrade sqlparse; limit size of SQL strings before parse."
     }
   ]
 }

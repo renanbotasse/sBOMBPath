@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from .severity import extract_cvss_score, normalize_severity
+
 
 def load_json(path: Path) -> Any:
     with path.open("r", encoding="utf-8") as handle:
@@ -38,6 +40,9 @@ def load_cve_report(path: Optional[Path]) -> List[Dict[str, Any]]:
     Accepts common shapes from other tools (flat list or wrapped under
     vulnerabilities/cves/findings/results). This project does not depend on
     any SBOM package — only on a portable JSON file when --cves is passed.
+
+    Severity follows sBOMBox semantics: explicit label when present, otherwise
+    derive from CVSS / CVSS vector. ``UNKNOWN`` is only kept when no score exists.
     """
     if path is None or not path.exists():
         return []
@@ -59,12 +64,21 @@ def load_cve_report(path: Optional[Path]) -> List[Dict[str, Any]]:
         cve_id = next((item.get(k) for k in _CVE_ID_KEYS if item.get(k)), None)
         if not cve_id:
             continue
+        cvss = extract_cvss_score(item)
         normalized.append(
             {
                 "id": str(cve_id),
                 "package": item.get("package") or item.get("component") or "",
                 "symbol": item.get("symbol") or item.get("sink") or "",
-                "severity": item.get("severity") or item.get("cvss_severity") or "",
+                "severity": normalize_severity(item),
+                "cvss": cvss,
+                "nvd_status": item.get("nvd_status") or item.get("vulnStatus") or "",
+                "summary": item.get("summary")
+                or item.get("title")
+                or item.get("description")
+                or "",
+                "aliases": list(item.get("aliases") or []),
+                "version": item.get("version") or "",
                 "raw": item,
             }
         )
